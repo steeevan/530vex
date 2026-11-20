@@ -1,0 +1,18 @@
+{
+	"extension": {
+		"version": "0.8.2026020401",
+		"json": 1
+	},
+	"project": {
+		"name": "AUTO PYTHON",
+		"slot": 8,
+		"description": "Imported from VEXcode IQ (AUTO PYTHON.iqpython)",
+		"platform": "IQ2",
+		"creationDate": "2026-11-13",
+		"language": "python",
+		"python": {
+			"main": "src\\main.py"
+		},
+		"sdkVersion": "IQ2_20230818_11_00_00"
+	}
+}
