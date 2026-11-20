@@ -2,17 +2,21 @@
 
 None of the numbers in the program have been tested on the real robot yet. They are starting guesses.
 
+To learn how the program works inside (the math and the reasons behind it), see the [lessons](README.md).
+
 ## Which file is which
 
 | File | What it is |
 |---|---|
-| `src/main.py` | The ONLY file that downloads to the brain. Right now it is the same as `autonomous/main_auto.py`. |
-| `autonomous/main_auto.py` | A spare copy of the autonomous program as first delivered. **Edit `src/main.py`, not this one.** |
-| `tools/sensor_test.py` | A small program that tests the brain's inertial sensor. |
-| `backup/main_driver_original.py` | The old driver-control program (also in brain slot 4). |
+| `src/main.py` | The ONLY file that downloads to the brain. It holds the autonomous program. |
+| `programs/sensor_test.py` | A small program that tests the brain's inertial sensor. |
+| `programs/driver_original.py` | The old driver-control program (also in brain slot 4). |
 
-To run a program: copy its text into `src/main.py`, then download to slot 8.
+To run one of the other programs: copy its text into `src/main.py`, then download to slot 8.
 Never download over slot 4.
+
+To get the autonomous program back afterwards, run `git checkout src/main.py` in the VS Code
+terminal, or copy `src/main.py` from GitHub.
 
 **Keep the program small.** The brain has little memory. If the program gets too big the brain
 shows `MemoryError`. Long comments and extra features both use memory.
@@ -122,4 +126,4 @@ A wrong distance scale makes everything else look wrong.
 | Drive stops a few mm short | Raise `DRIVE_MIN_SPEED` |
 | Drifts sideways | Raise `HEADING_KP`. Also check `HEADING_DIRECTION`. |
 | Wheels slip at the start | Lower `ACCEL_STEP` |
-| "INERTIAL BUSY" at start | Stop the program, put the robot still on a flat surface, start it again and do not touch it. If it keeps happening, run `tools/sensor_test.py`. |
+| "INERTIAL BUSY" at start | Stop the program, put the robot still on a flat surface, start it again and do not touch it. If it keeps happening, run `programs/sensor_test.py`. |

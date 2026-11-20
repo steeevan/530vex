@@ -1,7 +1,5 @@
 #region VEXcode Generated Robot Configuration
 from vex import *
-import urandom
-import math
 
 # Brain should be defined by default
 brain=Brain()
@@ -21,28 +19,15 @@ pneumatic_9 = Pneumatic(Ports.PORT9)
 distance_3 = Distance(Ports.PORT3)
 Bumper_1 = Bumper(Ports.PORT7)
 
-
-
-# generating and setting random seed
-def initializeRandomSeed():
-    wait(100, MSEC)
-    xaxis = brain_inertial.acceleration(XAXIS) * 1000
-    yaxis = brain_inertial.acceleration(YAXIS) * 1000
-    zaxis = brain_inertial.acceleration(ZAXIS) * 1000
-    systemTime = brain.timer.system() * 100
-    urandom.seed(int(xaxis + yaxis + zaxis + systemTime)) 
-    
-# Initialize random seed 
-initializeRandomSeed()
-
 #endregion VEXcode Generated Robot Configuration
 
 # =====================================================================
-#  AUTONOMOUS PROGRAM (VEX IQ 2nd gen).  Help: AUTO_GUIDE.md
+#  AUTONOMOUS PROGRAM (VEX IQ 2nd gen).  Help: docs/robot-guide.md
+#  Lessons that explain every function: docs/lessons/
 #  Brain menu: Left/Right = pick, Check = run.
 #  Edit only: SETTINGS (numbers) and routine() (the moves).
-#  Old driver program: backup/main_driver_original.py (and brain slot 4).
-#  Sensor test program: tools/sensor_test.py (copy it into src/main.py).
+#  Old driver program: programs/driver_original.py (and brain slot 4).
+#  Sensor test program: programs/sensor_test.py (copy it into src/main.py).
 #  START THE PROGRAM WITH THE ROBOT STILL (the sensor calibrates at start).
 #  KEEP THIS FILE SMALL - the brain gives MemoryError if it gets too big.
 # =====================================================================
@@ -142,6 +127,10 @@ def routine():
 # =====================================================================
 #  DON'T EDIT BELOW THIS LINE
 # =====================================================================
+
+# ---------------------------------------------------------------------
+#  Helpers: time, angles, PID, settling (lessons 2, 3 and 4)
+# ---------------------------------------------------------------------
 clock = Timer()
 problem_count = 0        # moves that ran out of time
 last_problem = ""
@@ -260,8 +249,8 @@ def keep_moving(speed, min_speed, error):
 
 
 # ---------------------------------------------------------------------
-#  Drive base. Each move returns True (arrived) or False (ran out of
-#  time) and always brakes at the end.
+#  Drive base (lesson 5). Each move returns True (arrived) or False
+#  (ran out of time) and always brakes at the end.
 # ---------------------------------------------------------------------
 def setup_motors():
     L.set_stopping(BRAKE)
@@ -350,6 +339,9 @@ def drive(distance_mm, heading, max_speed=DRIVE_MAX_SPEED):
     return done
 
 
+# ---------------------------------------------------------------------
+#  Moves that stop when a sensor says so (lesson 6)
+# ---------------------------------------------------------------------
 def back_until_bumper(heading, speed=BUMPER_SPEED):
     heading_pid = PID(HEADING_KP, HEADING_KI, HEADING_KD, HEADING_I_ZONE)
     start_time = now_ms()
@@ -398,7 +390,7 @@ def drive_until_distance(mm, heading, speed=SENSOR_SPEED):
 
 
 # ---------------------------------------------------------------------
-#  Mechanisms. C_L and C_R share two jobs: same sign = claw arm,
+#  Mechanisms (lesson 7). C_L and C_R share two jobs: same sign = claw arm,
 #  opposite signs = catapult. Moves and timings copied from the driver.
 # ---------------------------------------------------------------------
 def mechanism_spin(left, right):
@@ -438,8 +430,6 @@ def start_mechanisms():
     # If the cylinders don't move, add pneumatic_9.pump_on() here.)
     claw_open()
     set_catapult_level(3)
-    C_L.set_max_torque(100, PERCENT)
-    C_R.set_max_torque(100, PERCENT)
     return fire_catapult()
 
 
@@ -451,7 +441,7 @@ def fire_catapult():
     wait(CATAPULT_WIND_MS, MSEC)
     start_time = now_ms()
     done = True
-    while not abs(C_R.velocity(PERCENT)) < CATAPULT_STOPPED_BELOW:
+    while abs(C_R.velocity(PERCENT)) >= CATAPULT_STOPPED_BELOW:
         if now_ms() - start_time > CATAPULT_STALL_TIMEOUT_MS:
             done = False
             break
@@ -471,7 +461,7 @@ def claw_cycle():
     C_L.set_position(0, DEGREES)
     start_time = now_ms()
     done = True
-    while not abs(C_L.position(DEGREES)) > CLAW_ARM_DEGREES:
+    while abs(C_L.position(DEGREES)) <= CLAW_ARM_DEGREES:
         if now_ms() - start_time > CLAW_ARM_TIMEOUT_MS:
             done = False
             break
@@ -487,7 +477,7 @@ def claw_cycle():
 
 
 # ---------------------------------------------------------------------
-#  Brain screen: 6 rows x 16 letters (MONO20 font)
+#  Brain screen (lesson 8): 6 rows x 16 letters (MONO20 font)
 # ---------------------------------------------------------------------
 def show(*lines):
     brain.screen.clear_screen()
@@ -555,7 +545,7 @@ def wait_for_inertial():
 
 
 # ---------------------------------------------------------------------
-#  Menu items
+#  Menu items (lesson 8)
 # ---------------------------------------------------------------------
 def item_routine():
     start_time = now_ms()

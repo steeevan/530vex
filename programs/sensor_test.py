@@ -39,7 +39,7 @@ initializeRandomSeed()
 
 # =====================================================================
 #  SENSOR TEST PROGRAM (temporary). Tests the brain's inertial sensor.
-#  The autonomous program is saved in autonomous/main_auto.py
+#  Get the autonomous program back with: git checkout src/main.py
 #  Check button = next screen. Errors stay on screen.
 # =====================================================================
 try:
