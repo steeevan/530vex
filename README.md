@@ -18,15 +18,34 @@ robot's brain: the autonomous routine, or a test for each part of the robot.
 - **Shows a menu on the brain.** You can run the routine or one of the tests, and the screen shows
   how long it took and whether any step ran out of time.
 
+## Learn how it works
+
+The [**lessons**](docs/README.md) explain every function in the program: what it does, how it
+works, the math behind it, and why it was built that way. Each lesson has worked examples,
+activities for the robot, questions with answers, and notes for the teacher.
+
+1. [The big picture](docs/lessons/01-big-picture.md)
+2. [Measuring where the robot is](docs/lessons/02-measuring.md)
+3. [PID: fixing its own mistakes](docs/lessons/03-pid.md)
+4. [Smooth starts and clean stops](docs/lessons/04-smooth-and-done.md)
+5. [Turning and driving](docs/lessons/05-turning-and-driving.md)
+6. [Letting sensors decide when to stop](docs/lessons/06-sensor-stops.md)
+7. [The claw and the catapult](docs/lessons/07-mechanisms.md)
+8. [The screen and the menu](docs/lessons/08-screen-and-menu.md)
+9. [Thinking like a software engineer](docs/lessons/09-engineering.md)
+
 ## Files
 
 | File | What it is |
 |---|---|
 | [`src/main.py`](src/main.py) | The program that downloads to the brain. |
-| [`autonomous/main_auto.py`](autonomous/main_auto.py) | A spare copy of the autonomous program. |
-| [`tools/sensor_test.py`](tools/sensor_test.py) | A small program that checks the inertial sensor. |
-| [`backup/main_driver_original.py`](backup/main_driver_original.py) | The original driver-control program, kept as a backup. |
-| [`AUTO_GUIDE.md`](AUTO_GUIDE.md) | The full guide: the menu, writing a routine, and tuning. |
+| [`programs/sensor_test.py`](programs/sensor_test.py) | A small program that checks the inertial sensor. |
+| [`programs/driver_original.py`](programs/driver_original.py) | The original driver-control program, kept as a backup. |
+| [`docs/robot-guide.md`](docs/robot-guide.md) | How to use the robot: the menu, writing a routine, and tuning. |
+| [`docs/`](docs/README.md) | The lessons. |
+
+To run one of the other programs, copy its text into `src/main.py` and download it. To get the
+autonomous program back, run `git checkout src/main.py`.
 
 ## Robot ports
 
@@ -69,7 +88,7 @@ def routine():
 
 Headings: 0 is the way the robot faces at the start, 90 is right and -90 is left.
 
-The full list of moves and how to tune the numbers are in [AUTO_GUIDE.md](AUTO_GUIDE.md).
+The full list of moves and how to tune the numbers are in the [robot guide](docs/robot-guide.md).
 
 ## Things to know
 
@@ -77,3 +96,8 @@ The full list of moves and how to tune the numbers are in [AUTO_GUIDE.md](AUTO_G
   the brain shows `MemoryError`. The menu shows `mem free` so you can see how much room is left.
 - **Don't call `brain_inertial.calibrate()`.** On this robot it never finishes and the sensor gets
   stuck. The brain already calibrates the sensor by itself when the program starts.
+
+## License
+
+[MIT](LICENSE): you're free to use, copy and change this code, including for your own team's robot.
+Just keep the license notice.
