@@ -9,8 +9,9 @@
 **Before this:** [Lesson 4](04-smooth-and-done.md) (time limits). Lessons 5 and 6 aren't needed
 for this one.
 
-> **Safety first:** the catapult can fire whenever these functions run, including at the start of
-> `routine()`. Keep hands and faces away from it, and don't load a game piece until you mean to fire.
+> **Safety first:** the team arms the catapult and loads the preload by hand before the program
+> starts, and `fire_catapult()` can fire it at any time during `routine()`. Once it's armed, keep
+> hands and faces away from it.
 
 ---
 
@@ -180,17 +181,33 @@ def claw_cycle():
 
 ```python
 def start_mechanisms():
-    # Like the driver program at start-up. Arming FIRES the catapult once,
-    # so load no game piece first. (No pump_on(): the driver never calls it.
-    # If the cylinders don't move, add pneumatic_9.pump_on() here.)
+    # Open the claw and pick Level 4. It does NOT fire the catapult, so
+    # arm the catapult and load the preload BEFORE starting the program.
+    # (No pump_on(): the driver never calls it. If the cylinders don't
+    # move, add pneumatic_9.pump_on() here.)
     claw_open()
-    set_catapult_level(3)
-    return fire_catapult()
+    set_catapult_level(4)
 ```
 
-This does what the driver program does when it starts: open the claw, set level 3, and arm the
-catapult. Arming runs `fire_catapult()`, so **the catapult fires once**. That's why you load nothing
-before it.
+It opens the claw and picks level 4. It does **not** fire the catapult.
+
+Before the program starts, the team arms the catapult and loads the preload by hand. So the first
+`fire_catapult()` in the routine shoots the preload:
+
+```python
+def routine():
+    start_mechanisms()       # open claw, Level 4 (catapult must be armed)
+    # shoot the preload
+    drive(-50, 0, 100)       # back 50 mm, facing 0 degrees, top speed 100
+    turn_to(-32)             # turn a little left
+    drive(-150, -32, 100)
+    fire_catapult()
+    # ...
+```
+
+An older version did what the driver program does when it starts: set level 3 and fire the
+catapult once to arm it. That first shot happened before the robot moved, so nothing could be
+loaded for it. Arming by hand lets the preload go into the very first shot.
 
 ## Why it's built this way
 
@@ -222,10 +239,13 @@ before it.
 
 ## Try it
 
-1. Run **Catapult** from the menu. Film it in slow motion on a phone. Can you see the release, the
-   wind-down and the stop? Do they match the timeline?
-2. Run **Claw** from the menu. Watch where the arm stops. What do you think would happen with
-   `CLAW_ARM_DEGREES = 120`? (Try it carefully, then put it back to 145.)
+1. **Catapult alone:** put `fire_catapult()` at the top of `routine()`, followed by `return` (the
+   [robot guide](../robot-guide.md) shows how). Arm the catapult by hand first. Run it and film it
+   in slow motion on a phone. Can you see the release, the wind-down and the stop? Do they match
+   the timeline?
+2. **Claw alone:** do the same with `claw_open()`, `wait(300, MSEC)` and `claw_cycle()`. Watch where
+   the arm stops. What do you think would happen with `CLAW_ARM_DEGREES = 120`? (Try it carefully,
+   then put it back to 145.)
 3. **On paper:** what's the longest `fire_catapult()` can take before it gives up?
 4. **Think:** what would happen if you removed the 700 ms wait and checked for a stall straight
    away?
@@ -257,7 +277,9 @@ catapult was already wound and brake almost at once.
 ## Teacher notes
 
 - **Time:** 40 minutes.
-- **Safety:** go over the catapult rules before anyone runs anything. `start_mechanisms()` fires it.
+- **Safety:** go over the catapult rules before anyone runs anything. The catapult is armed by hand
+  before the program starts, and the match routine fires it four times. `start_mechanisms()` itself
+  doesn't fire it.
 - **Show the build:** take the robot and show students how both motors connect to both mechanisms.
   The code makes much more sense once they see the gears.
 - **"Motor as a sensor"** is a powerful idea. Ask what else could be detected this way (for example,

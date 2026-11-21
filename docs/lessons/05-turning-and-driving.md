@@ -232,7 +232,8 @@ four right turns:
 
 With relative turns, each small mistake is added to the last one. With absolute turns, each turn
 aims at a fixed target measured from the start, so turn 2 also fixes turn 1's mistake. **Errors
-don't add up.** That's why the **Turn test** turns to 90, 180, 270 and 360.
+don't add up.** That's why the turn test in the [robot guide](../robot-guide.md) uses
+`turn_to(90)`, `turn_to(180)`, `turn_to(270)` and `turn_to(360)`.
 
 ## Part E: True or False
 
@@ -256,10 +257,11 @@ if not turn_to(90):
 
 ## Try it
 
-1. **Push test:** set `HEADING_KP = 0` and run **Drive test**. Gently push the side of the robot
-   while it drives. Then set it back to 1.5 and push again. What's different?
-2. **Make the bug on purpose:** write `turn_to(90)` then `drive(300, 0)` in `routine()`. Predict
-   what happens, run it, then fix it.
+1. **Push test:** set `HEADING_KP = 0` and run the drive test (`drive(500, 0)` at the top of
+   `routine()`, followed by `return`, as in the [robot guide](../robot-guide.md)). Gently push the
+   side of the robot while it drives. Then set it back to 1.5 and push again. What's different?
+2. **Make the bug on purpose:** write `turn_to(90)` then `drive(300, 0)` at the top of `routine()`,
+   followed by `return`. Predict what happens, run it, then fix it.
 3. **On paper:** fill in left and right for these: speed 50, turn 5 / speed 50, turn −5 /
    speed −30, turn 4.
 4. **Trace one loop:** for `drive(600, 0)`, the robot has moved 580 mm and faces −1°. Work out the

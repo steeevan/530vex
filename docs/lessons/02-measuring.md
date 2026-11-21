@@ -62,12 +62,14 @@ That's the setting `MM_PER_DEGREE = 0.556`.
 1080 × 0.556 = 600 mm (about)
 ```
 
-### Fixing the number with the Drive test
+### Fixing the number with a drive test
 
 The 0.556 comes from math, but real robots are messy. Tires squish, wheels slip, and gears change
 the numbers. So instead of trusting the math, **measure it**:
 
-1. Run **Drive test** from the menu. The robot is told to drive 500 mm.
+1. Make `routine()` do only `drive(500, 0)`: put that line at the top of `routine()`, followed by
+   `return` (the [robot guide](../robot-guide.md) shows how). Run the program. The robot is told
+   to drive 500 mm.
 2. Measure how far it really went. Call that D.
 3. Work out the new number:
 
@@ -224,17 +226,20 @@ def clamp(value, low, high):
   needs to change, not every move.
 - **One setting fixes a whole problem.** `HEADING_DIRECTION` and `MM_PER_DEGREE` are settings. They
   aren't numbers buried in many lines.
-- **Measure, don't trust the math.** The Drive test checks `MM_PER_DEGREE` on the real robot.
+- **Measure, don't trust the math.** A drive test checks `MM_PER_DEGREE` on the real robot.
 - **Pick the number that's easiest to work with.** `rotation()` has no jumps, and `angle_diff()`
   handles the "shortest way" problem in one place.
 
 ## Try it
 
-1. **Show heading** (menu): turn the robot 90° clockwise by hand. Does the number go up to about 90?
-   If it goes down, set `HEADING_DIRECTION = -1`.
-2. **Drift test:** spin the robot one full turn by hand and put it back where it started. Does the
-   number go back to about 0 (or 360)? Leave the robot still for one minute. Does the number creep?
-3. **Drive test:** measure the real distance, then work out a new `MM_PER_DEGREE`.
+1. **Heading direction:** run `programs/sensor_test.py` (see the [robot guide](../robot-guide.md)).
+   On its first screen (TEST 1/4), turn the robot 90° clockwise by hand. Does `rot` go up to about
+   90? If it goes down, set `HEADING_DIRECTION = -1`.
+2. **Drift test (same screen):** spin the robot one full turn by hand and put it back where it
+   started. Does `rot` go back to about 0 (or 360)? Leave the robot still for one minute. Does the
+   number creep?
+3. **Drive test:** put `drive(500, 0)` and `return` at the top of `routine()`. Measure the real
+   distance, then work out a new `MM_PER_DEGREE`.
 4. **On paper:** roll a wheel one full turn along a ruler. Is it really 200 mm?
 
 ## Check your understanding
@@ -244,7 +249,7 @@ def clamp(value, low, high):
 3. What is `angle_diff(10, 350)`?
 4. What is `angle_diff(0, 90)`, and which way will the robot turn?
 5. Why does the program use `rotation()` and not `heading()`?
-6. The Drive test was told 500 mm but went 520 mm. `MM_PER_DEGREE` was 0.556. What's the new value?
+6. A drive test was told 500 mm but went 520 mm. `MM_PER_DEGREE` was 0.556. What's the new value?
 
 <details>
 <summary>Answers</summary>
@@ -265,6 +270,7 @@ def clamp(value, low, high):
 - **Hands-on:** bring a wheel and a ruler. Rolling one turn makes "circumference" real.
 - **Modulo:** use a clock face. Most students already know that 3 hours after 11 o'clock is
   2 o'clock.
-- **Common confusion:** heading vs rotation. The table in Part B helps. Spin the robot by hand
-  during **Show heading** and let them see the number pass 360.
-- **Connect to math class:** circumference (π × d), ratios (the Drive test fix), negative numbers.
+- **Common confusion:** heading vs rotation. The table in Part B helps. Run
+  `programs/sensor_test.py`, spin the robot by hand on its first screen, and let them see `rot`
+  pass 360 while `head` jumps back to 0.
+- **Connect to math class:** circumference (π × d), ratios (the drive test fix), negative numbers.

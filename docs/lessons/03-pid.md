@@ -225,7 +225,9 @@ A 600 mm drive starts with an error of 600, so the push is 0.4 × 600 = 240%, wh
 1. **On paper:** using `DRIVE_KP = 0.4`, fill in P for errors of 600, 200, 100, 50 and 10 mm. Then
    cap each answer at 60%.
 2. **On the robot (change one number at a time):**
-   - Run **Turn test** and write down the final error.
+   - Run the turn test: put `turn_to(90)`, `turn_to(180)`, `turn_to(270)`, `turn_to(360)` and
+     `return` at the top of `routine()` (see the [robot guide](../robot-guide.md)). Write down the
+     final error: 360 minus the `Heading` on the done screen.
    - Set `TURN_KP = 1.5` and run it again. Watch for overshoot.
    - Set `TURN_KP = 0.4` and run it again. Is it slower? Does it stop short?
    - Put `TURN_KP` back to 0.9. Now try `TURN_KD = 0`, then `0.06`, then `0.15`. Compare the

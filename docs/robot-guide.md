@@ -20,28 +20,66 @@ terminal, or copy `src/main.py` from GitHub.
 
 **Keep the program small.** The brain has little memory. If the program gets too big the brain
 shows `MemoryError`. Long comments and extra features both use memory.
-The menu shows `mem free` so you can see how much room is left.
+The done screen and the error screen show `mem free` so you can see how much room is left.
 
-## The brain menu
+## Starting the program
 
-Left/Right = pick an item. Check = run it.
+There is no menu. When you start the program, `routine()` runs right away.
 
-**Start the program with the robot STILL.** The brain calibrates its inertial sensor by itself when
-the program starts, and the screen says HANDS OFF until it is done. Each time you press Check, the
-heading is set to 0 (= the way the robot faces right then).
+1. **Before you start:** arm the catapult and load the preload by hand. The program does not arm
+   it. Line the robot up where the routine starts.
+2. **Start the program with the robot STILL.** The brain calibrates its inertial sensor by itself
+   when the program starts, and the screen says HANDS OFF until it is done. Don't touch the robot.
+3. Then the heading is set to 0 (= the way the robot faces right then), the screen says RUNNING,
+   and the routine runs.
+4. When the routine ends, the done screen shows:
+
+| Row | Example | What it means |
+|---|---|---|
+| 1 | `ROUTINE DONE` | The routine got to the end. |
+| 2 | `Time 23.4 s` | How long the routine took. |
+| 3 | `Heading 89.6` | Which way the robot faces at the end. |
+| 4 | `All steps OK` or `2 TIMEOUT(S)` | How many moves ran out of time. |
+| 5 | `last: drive` | The last move that ran out of time (empty if none did). |
+| 6 | `mem free:` and a number | How much memory is left. |
+
+If the program crashes, the robot stops and the screen shows ERROR, the error text (up to 4 rows)
+and `mem free`. Write down what it says.
+
+The last screen (done or error) stays up until you press X on the brain. X stops the program. To
+run the routine again, start the program again.
 
 Do not add `brain_inertial.calibrate()` to the program. On this robot it never finishes
 and leaves the sensor stuck.
 
-| Item | What it does |
-|---|---|
-| Routine | Runs `routine()`. |
-| Show heading | Shows the heading. Turn the robot clockwise by hand: the number must go UP. If it goes down, set `HEADING_DIRECTION = -1`. |
-| Turn test | Four 90 degree turns, then shows the error. |
-| Drive test | Drives 500 mm. Measure the real distance D, then `MM_PER_DEGREE = old * D / 500`. |
-| Catapult / Claw | Test each mechanism alone. |
+This way of starting (no menu, errors on the brain screen) has been checked on a pretend robot on a
+PC, but not yet on the real robot.
 
-If a crash happens, the error stays on the brain screen until you press Check.
+## Testing one thing at a time
+
+**Heading direction:** copy `programs/sensor_test.py` into `src/main.py` and download it to slot 8.
+Its first screen (TEST 1/4) shows `rot` live. Turn the robot clockwise by hand: `rot` must go UP.
+If it goes down, set `HEADING_DIRECTION = -1` in the autonomous program. You only need that first
+screen: press X to stop, then get the autonomous program back (see "Which file is which" above).
+
+**Drive, turns, catapult, claw:** put the test moves at the TOP of `routine()`, followed by
+`return`. `return` ends `routine()` right there, so the match moves under it are skipped, not lost.
+
+```python
+def routine():
+    drive(500, 0)            # TEST - delete these 2 lines when done
+    return
+    start_mechanisms()       # (the match routine, skipped for now)
+```
+
+| Test | Put these lines at the top of `routine()`, then `return` | What to check |
+|---|---|---|
+| Drive | `drive(500, 0)` | Measure the real distance D, then `MM_PER_DEGREE = old * D / 500`. |
+| Turns | `turn_to(90)`, `turn_to(180)`, `turn_to(270)`, `turn_to(360)` (one per line) | The done screen shows `Heading`. Final error = 360 - that number. |
+| Catapult | `fire_catapult()` | Arm the catapult by hand first, like before a match. Keep hands and faces away. |
+| Claw | `claw_open()`, `wait(300, MSEC)`, `claw_cycle()` (one per line) | Grab, flip, release. |
+
+Delete the test lines when you are done, so the match routine runs again.
 
 ## Headings
 
@@ -61,9 +99,9 @@ Edit `routine()` only. One move per line:
 - `set_heading(90)` after squaring on a wall, say "I am facing 90 now".
 - `wait(500, MSEC)` pause half a second.
 
-`start_mechanisms()` arms the catapult and it FIRES once. Load no game piece before it.
-To start WITHOUT firing, use these two lines instead (arm the catapult by hand first):
-`claw_open()` and `set_catapult_level(3)`. Fire later with `fire_catapult()`.
+`start_mechanisms()` opens the claw and sets catapult Level 4. It does NOT fire the catapult, so
+arm the catapult and load the preload by hand BEFORE you start the program. Fire with
+`fire_catapult()`.
 
 Handy tricks:
 - `drive(600, 0, 35)` and `turn_to(90, 30)`: the last number is the top speed. Go slower to be more accurate.
@@ -73,7 +111,7 @@ Handy tricks:
 - To find which way the distance sensor points, run the old driver program in slot 4: it shows the
   distance on the brain screen. Wave a hand at each end of the robot and see which one changes it.
 
-If a move runs out of time the routine keeps going, and the result screen shows TIMEOUT.
+If a move runs out of time the routine keeps going, and the done screen shows TIMEOUT.
 
 ## How the robot fixes its own mistakes (the idea behind the numbers)
 
@@ -110,7 +148,7 @@ While driving, the robot does TWO jobs at once, and each has its own numbers:
 3. Write down: what you changed, what happened.
 4. If it got better, keep going the same way. If it got worse, undo it.
 
-Before tuning drives, make sure the Drive test really goes 500 mm (see `MM_PER_DEGREE` above).
+Before tuning drives, make sure `drive(500, 0)` really goes 500 mm (the Drive test above).
 A wrong distance scale makes everything else look wrong.
 
 ## If something is wrong (change ONE number, then test again)
@@ -122,8 +160,10 @@ A wrong distance scale makes everything else look wrong.
 | Turn stops 1-3 degrees short | Raise `TURN_MIN_SPEED` |
 | Drive overshoots | Lower `DRIVE_KP`, or raise `DRIVE_KD` |
 | Drive too slow | Raise `DRIVE_KP`, then `DRIVE_MAX_SPEED` |
-| Drive goes the wrong distance every time | Fix `MM_PER_DEGREE` (Drive test) |
+| Drive goes the wrong distance every time | Fix `MM_PER_DEGREE` (Drive test, above) |
 | Drive stops a few mm short | Raise `DRIVE_MIN_SPEED` |
 | Drifts sideways | Raise `HEADING_KP`. Also check `HEADING_DIRECTION`. |
 | Wheels slip at the start | Lower `ACCEL_STEP` |
 | "INERTIAL BUSY" at start | Stop the program, put the robot still on a flat surface, start it again and do not touch it. If it keeps happening, run `programs/sensor_test.py`. |
+| ERROR screen | The program crashed while running, and the robot stopped. Write down the text. It names the problem, like a misspelled name (`NameError`) or a missing number in a move (`TypeError`). Fix it (usually in `routine()`) and download again. |
+| "Program error" (check console) on the brain, and you never saw HANDS OFF or our ERROR screen | The program failed while loading, before our code could run. Most likely it is too big (`MemoryError`): remove test lines and extra code, then download again. A typing mistake Python can't read, like a missing `)`, can also do this. To see the exact message, plug the brain into the computer and check the console. |

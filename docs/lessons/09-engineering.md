@@ -64,15 +64,15 @@ This is the most important rule for a robot. A loop that never ends freezes the 
 | `fire_catapult()` | motor stalls | 2 s |
 | `claw_cycle()` | arm passes 145° | 2 s |
 | `wait_for_inertial()` | sensor ready | 8 s |
-| `wait_release()`, `wait_for_check()`, `item_show_heading()` | a person presses or releases a button | (a person is there) |
-| `menu()` | never, on purpose | |
+| `wait_release()`, `wait_for_check()` | a person presses or releases a button | (a person is there) |
+| the `while True` at the very end | never, on purpose: it keeps the last screen up until you press X | |
 
 **Why:** robots get stuck. A time limit turns "frozen forever" into "one move failed, carry on."
 
 ## 6. Fail safe
 
-**In our code:** every move brakes at the end, whether it worked or not. `show_error()` stops all
-the motors **before** it shows the message.
+**In our code:** every move brakes at the end, whether it worked or not. The whole run is inside
+`try` / `except`, and `show_error()` stops all the motors **before** it shows the message.
 
 **Why:** when something goes wrong, the safest state is "stopped." Design so that failure leads to
 safety, not to a robot driving off the table.
@@ -80,10 +80,12 @@ safety, not to a robot driving off the table.
 ## 7. Report problems, don't hide them
 
 **In our code:** moves return True or False. Timeouts are counted and shown (`2 TIMEOUT(S)`,
-`last: drive`). Crashes are shown on the screen.
+`last: drive`). Crashes are shown on the brain screen, not only on the computer's console.
 
-**Why:** a hidden problem is the hardest one to fix. If the robot ends in the wrong spot, the result
-screen tells you *which move* had trouble.
+**Why:** a hidden problem is the hardest one to fix. If the robot ends in the wrong spot, the done
+screen tells you *which move* had trouble. And the team once saw only "Program error, check
+console" on the brain, with no computer nearby to check it. Now a crash during the run says what
+went wrong, right on the robot.
 
 ## 8. Aim at fixed targets so errors don't add up
 
@@ -94,8 +96,9 @@ move correct the mistakes before it (lesson 5, Part D).
 
 ## 9. Measure, don't guess
 
-**In our code:** Show heading, Turn test and Drive test are built into the menu.
-`programs/sensor_test.py` is a whole program just for checking the inertial sensor.
+**In our code:** `programs/sensor_test.py` is a whole program just for checking the inertial
+sensor. The [robot guide](../robot-guide.md) has short tests for drives, turns and the mechanisms:
+put the test at the top of `routine()`, followed by `return`.
 
 **Why:** the sensor test found that `calibrate()` gets stuck on this robot. Nobody would have
 guessed that. The program was changed because of a **measurement**, not an opinion.
@@ -110,11 +113,13 @@ This is the scientific method: one variable at a time, repeat the test, keep not
 
 ## 11. Work within your limits
 
-**In our code:** the program is kept small, and the menu shows `mem free`.
+**In our code:** the program is kept small, and the done and error screens show `mem free`.
 
 **Why:** the VEX IQ brain has very little memory. A bigger version of this program crashed with
-`MemoryError`. That's why the explanations live in these lessons, not in long
-comments in the code. Every computer has limits. Engineers measure them and design around them.
+`MemoryError` while loading. That's why the explanations live in these lessons, not in long
+comments in the code. Later the brain menu was taken out for the same reason: the program was close
+to the limit again, and tests can go at the top of `routine()` instead. Every computer has limits.
+Engineers measure them and design around them.
 
 ## 12. Prove a change didn't break anything
 
@@ -159,14 +164,16 @@ mechanism_spin(-100, 100)
    `show_error()` didn't stop the motors? If `turn_to()` used relative turns?
 4. **Project ideas:**
    - Write a `drive_until_bumper_forward()` move. Which habits must it follow?
-   - Add a menu item that runs the Turn test 3 times and shows the worst error.
+   - Make the turn test go around 3 times: `turn_to(90)`, `turn_to(180)` and so on, up to
+     `turn_to(1080)` (12 turns). Compare the final error (1080 minus the `Heading` on the done
+     screen) with one round. Does it grow? What does that tell you about drift?
    - Write a routine that uses a wall to reset the heading halfway through (lesson 6).
 
 ## Check your understanding
 
 1. What is a "magic number", and how does this program avoid them?
 2. Name two ways the program "fails safe."
-3. Why is `menu()` allowed to loop forever, but `drive()` isn't?
+3. Why is the `while True` loop at the very end allowed to loop forever, but `drive()` isn't?
 4. What does "refactoring" mean, and how was the cleanup checked?
 5. You changed `TURN_KP` and `TURN_KD` at the same time and the robot got worse. What should you do?
 
@@ -177,8 +184,9 @@ mechanism_spin(-100, 100)
    name in `SETTINGS`.
 2. Any two of: every move brakes at the end; `show_error()` stops the motors; time limits stop
    stuck moves.
-3. `menu()` is waiting for a person, and its job is to run until the program is stopped. A `drive()`
-   that never ended would freeze the routine.
+3. That loop runs after everything else is done, so nothing is waiting for it. Its job is to keep
+   the last screen up until a person presses X. A `drive()` that never ended would freeze the
+   routine.
 4. Changing code without changing what it does. Both versions were run on a pretend robot and every
    command they sent was compared.
 5. Undo both, then change only one, test it 3 times, and write down what happened. Then try the

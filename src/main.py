@@ -24,7 +24,7 @@ Bumper_1 = Bumper(Ports.PORT7)
 # =====================================================================
 #  AUTONOMOUS PROGRAM (VEX IQ 2nd gen).  Help: docs/robot-guide.md
 #  Lessons that explain every function: docs/lessons/
-#  Brain menu: Left/Right = pick, Check = run.
+#  NO MENU: start the program and routine() runs right away.
 #  Edit only: SETTINGS (numbers) and routine() (the moves).
 #  Old driver program: programs/driver_original.py (and brain slot 4).
 #  Sensor test program: programs/sensor_test.py (copy it into src/main.py).
@@ -40,11 +40,11 @@ except Exception:
 #  SETTINGS - ALL UNTESTED STARTING GUESSES. Speed = %, distance = mm.
 # ---------------------------------------------------------------------
 # mm moved per degree of wheel turn (guess: 200 mm per turn / 360).
-# FIX: Drive test is told 500 mm. If it really goes D mm:
+# FIX: make routine() only drive(500, 0). If it really goes D mm:
 #      new MM_PER_DEGREE = old MM_PER_DEGREE * D / 500
 MM_PER_DEGREE = 0.556
-# 1 or -1. Turn the robot CLOCKWISE by hand (Show heading): rot must go UP.
-# If it goes down, use -1.
+# 1 or -1. Turn the robot CLOCKWISE by hand (programs/sensor_test.py
+# shows it): rot must go UP. If it goes down, use -1.
 HEADING_DIRECTION = 1
 
 LOOP_MS = 20             # control loop time
@@ -83,9 +83,6 @@ SENSOR_TIMEOUT_MS = 4000
 
 INERTIAL_WAIT_MS = 8000     # most it waits for the sensor at program start
 
-TURN_TEST_ANGLE = 90
-DRIVE_TEST_MM = 500
-
 # Mechanism timings, copied from the driver program (only change if the
 # mechanism changed). The two TIMEOUTs are new.
 CATAPULT_RELEASE_MS = 250
@@ -101,10 +98,11 @@ CLAW_RETURN_MS = 500
 
 
 # ---------------------------------------------------------------------
-#  YOUR ROUTINE - the numbers are MADE UP. Change them for your field.
-#   start_mechanisms()   open claw, Level 3, arm catapult (it FIRES once)
+#  YOUR ROUTINE - it runs as soon as the program starts.
+#   start_mechanisms()   open claw, catapult Level 4 (does NOT fire)
 #   drive(mm, heading)   negative mm = backward
 #   turn_to(heading)     spin in place
+#   drive(mm, heading, 100) / turn_to(heading, 100): last number = top speed
 #   back_until_bumper(heading)
 #   drive_until_distance(mm, heading, speed)   speed +/- = direction
 #   set_heading(value)   say "I am facing value now"
@@ -113,15 +111,55 @@ CLAW_RETURN_MS = 500
 #  Headings: 0 = the way the robot faced at start, 90 = right, -90 = left.
 # ---------------------------------------------------------------------
 def routine():
-    start_mechanisms()       # open claw, arm catapult
-    drive(600, 0)            # forward 600 mm, facing 0 degrees
-    claw_cycle()             # grab, flip, release
-    turn_to(90)              # face right
-    drive(300, 90)
+    start_mechanisms()       # open claw, Level 4 (catapult must be armed)
+    # shoot the preload
+    drive(-50, 0, 100)       # back 50 mm, facing 0 degrees, top speed 100
+    turn_to(-32)             # turn a little left
+    drive(-150, -32, 100)
     fire_catapult()
-    drive(-400, 90)          # negative = backward
-    back_until_bumper(90)    # square up on the wall
+
+    # grab first yellow
+    drive(80, -32, 100)
+    turn_to(-190)
+    drive(130, -190, 100)
+    claw_cycle()
+
+    # shoot first yellow
+    drive(-130, -190, 100)
+    turn_to(-35)
+    drive(-100, -35, 100)
+    fire_catapult()
+
+    # grab second yellow
+    drive(100, -35, 100)
+    turn_to(203)
+    drive(140, 203, 100)
+    turn_to(190, 100)
+    drive(20, 190, 100)
+    claw_cycle()
+
+    # shoot second yellow
+    drive(-155, 190)
+    turn_to(-39, 100)
+    drive(-150, -39, 100)
+    fire_catapult()
+
+    #---40 seconds---
+    # red
+    drive(80, -35, 100)
+    turn_to(60, 100)
+    drive(200, 60, 100)
+    claw_cycle()
+
+    turn_to(92, 100)
+    drive(-200, 92, 100)
+    drive(-100, 90, 100)
+    set_catapult_level(3)
+    fire_catapult()
+
+    #back_until_bumper(90)   # square up on the wall
     # set_heading(90)        # optional: after squaring, say "I am at 90"
+    set_catapult_level(3)
 
 
 # =====================================================================
@@ -165,12 +203,6 @@ def report_problem(name):
     global problem_count, last_problem
     problem_count += 1
     last_problem = name
-
-
-def reset_problems():
-    global problem_count, last_problem
-    problem_count = 0
-    last_problem = ""
 
 
 def free_memory():
@@ -425,12 +457,12 @@ def set_catapult_level(level):
 
 
 def start_mechanisms():
-    # Like the driver program at start-up. Arming FIRES the catapult once,
-    # so load no game piece first. (No pump_on(): the driver never calls it.
-    # If the cylinders don't move, add pneumatic_9.pump_on() here.)
+    # Open the claw and pick Level 4. It does NOT fire the catapult, so
+    # arm the catapult and load the preload BEFORE starting the program.
+    # (No pump_on(): the driver never calls it. If the cylinders don't
+    # move, add pneumatic_9.pump_on() here.)
     claw_open()
-    set_catapult_level(3)
-    return fire_catapult()
+    set_catapult_level(4)
 
 
 def fire_catapult():
@@ -489,11 +521,6 @@ def show(*lines):
         row += 1
 
 
-def show_row(row, text):
-    brain.screen.set_cursor(row, 1)
-    brain.screen.print(("%-16s" % text)[:16])
-
-
 def wait_release(button):
     while button.pressing():
         wait(20, MSEC)
@@ -506,27 +533,29 @@ def wait_for_check():
     wait_release(brain.buttonCheck)
 
 
-def show_result(title, line2="", line3=""):
+def show_result(seconds):
+    # The screen after the routine: time, heading, and any timeouts.
     if problem_count == 0:
         status1 = "All steps OK"
         status2 = ""
     else:
         status1 = "%d TIMEOUT(S)" % problem_count
         status2 = "last: " + last_problem
-    show(title, line2, line3, status1, status2, "Check: menu")
-    wait_for_check()
+    show("ROUTINE DONE", "Time %.1f s" % seconds, "Heading %.1f" % heading_now(),
+         status1, status2, "mem free:%d" % free_memory())
 
 
-def show_error(where, error):
-    # Stop the robot, then keep the error on screen until Check is pressed.
+def show_error(error):
+    # Stop the robot and show the error ON THE BRAIN SCREEN, so you can
+    # read it without the console. Write down what it says.
     try:
         brake_drive()
         mechanism_stop(BRAKE)
     except Exception:
         pass
     text = repr(error)
-    show("ERROR", where, text[0:16], text[16:32], text[32:48], "Check: menu")
-    wait_for_check()
+    show("ERROR", text[0:16], text[16:32], text[32:48], text[48:64],
+         "mem free:%d" % free_memory())
 
 
 def wait_for_inertial():
@@ -545,99 +574,23 @@ def wait_for_inertial():
 
 
 # ---------------------------------------------------------------------
-#  Menu items (lesson 8)
+#  Start (lesson 1). No menu: the routine runs as soon as the program
+#  starts. If anything crashes, the error is shown on the brain screen.
 # ---------------------------------------------------------------------
-def item_routine():
+def run_routine():
+    setup_motors()
+    wait_for_inertial()
+    brain_inertial.set_rotation(0, DEGREES)    # 0 = the way the robot faces now
+    show("RUNNING")
     start_time = now_ms()
     routine()
-    seconds = (now_ms() - start_time) / 1000.0
-    show_result("ROUTINE DONE", "Time %.1f s" % seconds)
+    show_result((now_ms() - start_time) / 1000.0)
 
 
-def item_show_heading():
-    show("SHOW HEADING", "Turn clockwise", "Number must go +")
-    show_row(6, "Check: exit")
-    while not brain.buttonCheck.pressing():
-        show_row(4, "%8.1f deg" % heading_now())
-        wait(100, MSEC)
-    wait_release(brain.buttonCheck)
+try:
+    run_routine()
+except Exception as error:
+    show_error(error)
 
-
-def item_turn_test():
-    for i in range(1, 5):
-        turn_to(TURN_TEST_ANGLE * i)
-        wait(300, MSEC)
-    error = angle_diff(TURN_TEST_ANGLE * 4, heading_now())
-    show_result("TURN TEST", "Final error:", "%.1f deg" % error)
-
-
-def item_drive_test():
-    drive(DRIVE_TEST_MM, 0)
-    show_result("DRIVE TEST", "Told %d mm" % DRIVE_TEST_MM, "Measure it!")
-
-
-def item_catapult():
-    fire_catapult()
-    show_result("CATAPULT", "Cycle finished")
-
-
-def item_claw():
-    claw_open()
-    wait(300, MSEC)
-    claw_cycle()
-    show_result("CLAW", "Grab, flip, drop")
-
-
-MENU = [
-    ("Routine", item_routine),
-    ("Show heading", item_show_heading),
-    ("Turn test", item_turn_test),
-    ("Drive test", item_drive_test),
-    ("Catapult", item_catapult),
-    ("Claw", item_claw),
-]
-
-
-def run_item(index):
-    name = MENU[index][0]
-    action = MENU[index][1]
-    reset_problems()
-    brain_inertial.set_rotation(0, DEGREES)    # 0 = the way the robot faces now
-    show("RUNNING", name)
-    action()
-
-
-def draw_menu(index):
-    show("AUTO MENU %d/%d" % (index + 1, len(MENU)),
-         "mem free:%d" % free_memory(),
-         "< " + MENU[index][0] + " >",
-         "",
-         "Left/Right:pick",
-         "Check: run")
-
-
-def menu():
-    index = 0
-    draw_menu(index)
-    while True:
-        if brain.buttonLeft.pressing():
-            index = (index - 1) % len(MENU)
-            draw_menu(index)
-            wait_release(brain.buttonLeft)
-        elif brain.buttonRight.pressing():
-            index = (index + 1) % len(MENU)
-            draw_menu(index)
-            wait_release(brain.buttonRight)
-        elif brain.buttonCheck.pressing():
-            wait_release(brain.buttonCheck)
-            try:
-                run_item(index)
-            except Exception as error:
-                show_error(MENU[index][0], error)
-            draw_menu(index)
-        wait(20, MSEC)
-
-
-setup_motors()
-wait_for_inertial()
-menu()
+while True:              # keep the last screen up until you press X
+    wait(100, MSEC)

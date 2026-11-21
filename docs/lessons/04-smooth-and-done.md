@@ -2,8 +2,8 @@
 
 **Big question:** How does the robot speed up without slipping, and how does it know it's done?
 
-**Functions in this lesson:** `ramp()`, `keep_moving()`, `Settle`, `report_problem()`,
-`reset_problems()`, and the time limits, in [`src/main.py`](../../src/main.py).
+**Functions in this lesson:** `ramp()`, `keep_moving()`, `Settle`, `report_problem()`, and the
+time limits, in [`src/main.py`](../../src/main.py).
 
 **Before this:** [Lesson 3](03-pid.md).
 
@@ -201,22 +201,19 @@ drive(-400, 90): 1500 + 400 × 8 = 4700 ms   (uses the size, so −400 counts as
 ```python
 problem_count = 0        # moves that ran out of time
 last_problem = ""
-...
+# ...
 
 def report_problem(name):
     global problem_count, last_problem
     problem_count += 1
     last_problem = name
-
-
-def reset_problems():
-    global problem_count, last_problem
-    problem_count = 0
-    last_problem = ""
 ```
 
 - When a move runs out of time it calls something like `report_problem("drive")`.
-- The result screen then shows `1 TIMEOUT(S)` and `last: drive`, so you know which move had trouble.
+- The done screen at the end of the routine then shows `1 TIMEOUT(S)` and `last: drive`, so you
+  know which move had trouble (lesson 8).
+- There's no need to reset the count. It starts at 0 every time the program starts, and the routine
+  runs once per start.
 - `global` means "I want to change the variable that lives outside this function." Without it,
   Python would make a new local variable and the count outside would never change.
 
@@ -232,12 +229,16 @@ def reset_problems():
 
 ## Try it
 
-1. **Slip test:** set `ACCEL_STEP = 20` and run **Drive test** on a smooth floor. Watch the wheels at
-   the start and measure the distance. Put it back to 4 and compare.
-2. **Minimum speed:** set `TURN_MIN_SPEED = 0` and run **Turn test**. Does it stop short or show a
-   TIMEOUT? Then try 15. Does it wobble? Put it back to 6.
-3. **Time limit:** gently hold the robot during **Drive test** so it can't finish. What does the
-   result screen say?
+For these, put the test at the top of `routine()`, followed by `return` (the
+[robot guide](../robot-guide.md) shows how).
+
+1. **Slip test:** set `ACCEL_STEP = 20` and run the drive test (`drive(500, 0)`) on a smooth floor.
+   Watch the wheels at the start and measure the distance. Put it back to 4 and compare.
+2. **Minimum speed:** set `TURN_MIN_SPEED = 0` and run the turn test (`turn_to(90)`, `turn_to(180)`,
+   `turn_to(270)`, `turn_to(360)`). Does it stop short or show a TIMEOUT? Then try 15. Does it
+   wobble? Put it back to 6.
+3. **Time limit:** gently hold the robot during the drive test so it can't finish. What does the
+   done screen say?
 4. **On paper:** write down the power for each loop of `ramp()` going from 0 to 60 with step 4.
 
 ## Check your understanding

@@ -8,9 +8,9 @@ for the coach who teaches them.
 
 ## Start here
 
-1. **Use the robot first.** Read the [robot guide](robot-guide.md). It shows how to run the menu,
-   write a routine and tune the numbers. Students should drive the robot before they study how it
-   works.
+1. **Use the robot first.** Read the [robot guide](robot-guide.md). It shows how to start the
+   program, write a routine, test each part of the robot and tune the numbers. Students should drive
+   the robot before they study how it works.
 2. **Then look under the hood** with the lessons below, in order. Each one builds on the one
    before it.
 
@@ -25,7 +25,7 @@ for the coach who teaches them.
 | 5 | [Turning and driving](lessons/05-turning-and-driving.md) | How do the pieces fit together into `turn_to()` and `drive()`? | Yes |
 | 6 | [Letting sensors decide when to stop](lessons/06-sensor-stops.md) | How can walls and sensors fix the robot's mistakes? | Yes |
 | 7 | [The claw and the catapult](lessons/07-mechanisms.md) | How do two motors run two different mechanisms? | Yes |
-| 8 | [The screen and the menu](lessons/08-screen-and-menu.md) | How do the buttons, the screen and the error messages work? | Helpful |
+| 8 | [The screen and error messages](lessons/08-screen-and-start.md) | How does the brain's screen tell you what happened, even when the program crashes? | Helpful |
 | 9 | [Thinking like a software engineer](lessons/09-engineering.md) | Why is the whole program built this way? | No |
 
 Every lesson has the same parts:
@@ -68,8 +68,7 @@ Functions are listed in the order they appear in `src/main.py`.
 | `heading_now()` | Which way the robot faces, in degrees. | [2](lessons/02-measuring.md) |
 | `set_heading()` | Tells the robot "you are facing this way now". | [2](lessons/02-measuring.md), [6](lessons/06-sensor-stops.md) |
 | `report_problem()` | Counts a move that ran out of time. | [4](lessons/04-smooth-and-done.md) |
-| `reset_problems()` | Sets that count back to zero. | [4](lessons/04-smooth-and-done.md) |
-| `free_memory()` | How much memory the brain has left. | [8](lessons/08-screen-and-menu.md) |
+| `free_memory()` | How much memory the brain has left. Shown on the done and error screens. | [8](lessons/08-screen-and-start.md) |
 | `PID` | Turns "how far off am I" into "how much power". | [3](lessons/03-pid.md) |
 | `Settle` | Decides when a move is really finished. | [4](lessons/04-smooth-and-done.md) |
 | `ramp()` | Speeds up a little at a time so the wheels don't slip. | [4](lessons/04-smooth-and-done.md) |
@@ -87,18 +86,14 @@ Functions are listed in the order they appear in `src/main.py`.
 | `mechanism_stop()` | Stops the two shared mechanism motors. | [7](lessons/07-mechanisms.md) |
 | `claw_open()` / `claw_close()` | Opens or closes the claw with air. | [7](lessons/07-mechanisms.md) |
 | `set_catapult_level()` | Picks catapult level 3 or 4. | [7](lessons/07-mechanisms.md) |
-| `start_mechanisms()` | Gets the claw and catapult ready at the start. | [7](lessons/07-mechanisms.md) |
+| `start_mechanisms()` | Opens the claw and picks catapult level 4. It does not fire. | [7](lessons/07-mechanisms.md) |
 | `fire_catapult()` | Fires the catapult and winds it back down. | [7](lessons/07-mechanisms.md) |
 | `claw_cycle()` | Grabs, flips over, lets go and swings back. | [7](lessons/07-mechanisms.md) |
-| `show()` | Writes up to 6 lines on the brain screen. | [8](lessons/08-screen-and-menu.md) |
-| `show_row()` | Rewrites one line of the screen. | [8](lessons/08-screen-and-menu.md) |
-| `wait_release()` | Waits until a button is let go. | [8](lessons/08-screen-and-menu.md) |
-| `wait_for_check()` | Waits for one full press of the Check button. | [8](lessons/08-screen-and-menu.md) |
-| `show_result()` | Shows how a test or routine went. | [8](lessons/08-screen-and-menu.md) |
-| `show_error()` | Stops the robot and shows a crash message. | [8](lessons/08-screen-and-menu.md) |
+| `show()` | Writes up to 6 lines on the brain screen. | [8](lessons/08-screen-and-start.md) |
+| `wait_release()` | Waits until a button is let go. | [8](lessons/08-screen-and-start.md) |
+| `wait_for_check()` | Waits for one full press of the Check button (used by the INERTIAL BUSY warning). | [8](lessons/08-screen-and-start.md) |
+| `show_result()` | Shows the done screen: time, heading, timeouts and memory left. | [8](lessons/08-screen-and-start.md) |
+| `show_error()` | Stops the robot and shows the error on the brain screen. | [8](lessons/08-screen-and-start.md) |
 | `wait_for_inertial()` | Waits for the heading sensor to get ready. | [2](lessons/02-measuring.md) |
-| `item_routine()` and the other `item_...()` functions | What each menu choice does. | [8](lessons/08-screen-and-menu.md) |
-| `MENU` | The list of menu choices. | [8](lessons/08-screen-and-menu.md) |
-| `run_item()` | Runs one menu choice. | [8](lessons/08-screen-and-menu.md) |
-| `draw_menu()` | Draws the menu on the screen. | [8](lessons/08-screen-and-menu.md) |
-| `menu()` | The main loop that reads the buttons. | [8](lessons/08-screen-and-menu.md) |
+| `run_routine()` | Gets the robot ready, runs `routine()`, then shows the done screen. | [1](lessons/01-big-picture.md) |
+| `try` / `except` and `while True` at the end | Show any crash on the brain screen, then keep the last screen up until you press X. | [1](lessons/01-big-picture.md), [8](lessons/08-screen-and-start.md) |
